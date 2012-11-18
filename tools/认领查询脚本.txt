@@ -1,0 +1,32 @@
+select *
+  from (select a.*,
+               nvl(b.qrrlMoney, 0) as qrrlMoney,
+               nvl(c.rlMoney, 0) as rlMoney,
+               a.sk0102 - nvl(c.rlMoney, 0) as krlMoney,
+               '<img src=''/shisuo/images/jf_audit.gif''/>' as image
+          from sk01 a
+          left join (select sum(PJF0304) qrrlMoney, pjf0301
+                      from PJF03
+                     where PJF0309 = '03'
+                     group by pjf0301) b
+            on a.SK00 = b.pjf0301
+          left join (select sum(PJF0304) rlMoney, pjf0301
+                      from PJF03
+                     where PJF0309 <> '04'
+                     group by pjf0301) c
+            on a.sk00 = c.pjf0301
+         where a.sk0112 = '1')
+ where krlMoney > 0
+   and sk00 in (select pjf0301
+                  from pjf03
+                 where p00 in (select p00
+                                 from p01
+                                where p0101 like '%%'
+                                  and p0118 like '%%')
+                   and pjf0302 in (select ht0126
+                                     from ht01
+                                    where ht0118 <>
+                                          '00000000-0000-0000-0000-000000000000'
+                                      and ht0101 like '%%'
+                                      and ht0102 like '%2012%'))
+ order by SK0112, SK0103 desc
